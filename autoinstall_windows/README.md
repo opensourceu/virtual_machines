@@ -22,6 +22,10 @@ Windows installation is fully automated by setting values in `autounattend.xml` 
 
 Some installer screens only display informational or progress messages and don't require user input. These screens still appear in an unattended install.
 
+## 2. A complete minimal answer file for an unattended install
+
+The file [autounattend.xml](autounattend.xml) is a nearly minimal answer file to automatically install Windows 11 Pro 24H2 version 10.0.26100
+
 ## 2. What's needed to create a Windows autoinstaller
 
 1. An official Windows installer ISO
@@ -42,13 +46,21 @@ Some installer screens only display informational or progress messages and don't
 Mount the ISO and note the drive
 
 ```powershell
-mount-diskimage Win11_24H2_English_x64.iso
+mount-diskimage Win11_24H2_English_x64.iso | get-volume
 ```
-Copy ISO contents to a directory for modification. The command below assumes the ISO is mounted on `k:` drive and its contents are copied to a `win11mod` directory.
+
+```
+DriveLetter FriendlyName            FileSystemType DriveType HealthStatus OperationalStatus SizeRemaining
+----------- ------------            -------------- --------- ------------ ----------------- -----
+K           CCCOMA_X64FRE_EN-US_DV9 Unknown        CD-ROM    Healthy      OK                  0 B
+
+```
+Copy ISO contents to a directory for modification. With the ISO mounted on `k:` drive, copy its contents to a directory e.g. `win11mod`
 
 ```powershell
 robocopy k: win11mod -copy:dt -dcopy:t -e -r:0
 ```
+
 Unmount the ISO. It won't be needed again.
 
 ```powershell
@@ -83,13 +95,27 @@ cp autounattend.xml win11mod
 
 ## 8. Step 5 - Create ISO file from modified ISO contents
 
-Use `oscdimg` from the ADK to create an ISO file from the ISO directory contents
+Use `oscdimg` from the ADK to create an ISO file from the ISO directory contents. Its usage is documented at https://learn.microsoft.com/en-us/troubleshoot/windows-server/setup-upgrade-and-drivers/create-iso-image-for-uefi-platforms and https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/oscdimg-command-line-options
 
 ```powershell
 oscdimg -bootdata:2#p0,e,bwin11mod/boot/etfsboot.com#pEF,e,bwin11mod/efi/microsoft/boot/efisys.bin -u1 -udfver102 win11mod win11.auto.iso
 ```
 
-## 9. Windows installer screens
+## 9. Troubleshooting and debugging
+
+Generally, it helps to make tiny incremental changes to easily isolate and fix mistakes. It also helps to first test new commands and files in small standalone toy examples in order to understand their usage and impact.
+
+The System Image Manager application provides validation of an answer file with warnings and errors in its Messages pane
+
+All powershell commands used here print messages on error
+
+Errors during a run of the autoinstaller terminate the unattended install. The installer will stop at one of the interactive screens described below or display an error screen. The displayed screen may have enough information to figure out what is wrong in the answer file.
+
+More detailed information can be obtained by launching a `cmd` terminal with `Shift-F10` when autoinstall is interrupted. Installer logs can be examined and other commands can be run in the terminal. The location of installer logs is documented at https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/windows-setup-log-files-and-event-logs
+
+The preinstall environment available at the beginning of the installer is described at https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/winpe-intro
+
+## 10. Windows installer screens
 
 These screens are from the Windows 11 installer ISO at https://www.microsoft.com/en-us/software-download/windows11. The installer was run interactively to install Windows 11 Pro 24H2 version 10.0.26100.
 
@@ -200,11 +226,93 @@ Screen 6 settings are set by the following section of `autounattend.xml`.
 </settings>
 ```
 
+`<Key>` can be `/IMAGE/NAME`, `/IMAGE/INDEX` or `/IMAGE/DESCRIPTION` as documented at https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-setup-imageinstall-dataimage-installfrom-metadata-key
+
+The corresponding `<Value>` is obtained from `install.wim` using `dism` from ADK. Its usage is documented at https://learn.microsoft.com/en-us/windows/deployment/windows-adk-scenarios-for-it-pros and https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/deployment-image-servicing-and-management--dism--command-line-options
+
+```powershell
+dism -get-imageinfo -imagefile:install.wim
+```
+
+```
+Deployment Image Servicing and Management tool
+Version: 10.0.26100.2454
+
+Details for image : install.wim
+
+Index : 1
+Name : Windows 11 Home
+Description : Windows 11 Home
+Size : 18,727,965,088 bytes
+
+Index : 2
+Name : Windows 11 Home N
+Description : Windows 11 Home N
+Size : 18,190,503,625 bytes
+
+Index : 3
+Name : Windows 11 Home Single Language
+Description : Windows 11 Home Single Language
+Size : 18,725,453,549 bytes
+
+Index : 4
+Name : Windows 11 Education
+Description : Windows 11 Education
+Size : 19,230,378,207 bytes
+
+Index : 5
+Name : Windows 11 Education N
+Description : Windows 11 Education N
+Size : 18,698,289,981 bytes
+
+Index : 6
+Name : Windows 11 Pro
+Description : Windows 11 Pro
+Size : 19,250,929,144 bytes
+
+Index : 7
+Name : Windows 11 Pro N
+Description : Windows 11 Pro N
+Size : 18,700,496,532 bytes
+
+Index : 8
+Name : Windows 11 Pro Education
+Description : Windows 11 Pro Education
+Size : 19,230,428,845 bytes
+
+Index : 9
+Name : Windows 11 Pro Education N
+Description : Windows 11 Pro Education N
+Size : 18,698,315,750 bytes
+
+Index : 10
+Name : Windows 11 Pro for Workstations
+Description : Windows 11 Pro for Workstations
+Size : 19,230,479,483 bytes
+
+Index : 11
+Name : Windows 11 Pro N for Workstations
+Description : Windows 11 Pro N for Workstations
+Size : 18,698,341,519 bytes
+```
+
 ## Screen 7 - Select setup option
 
 Screen 7 shows the EULA to accept.
 
 ![07_license.png](images/07_license.png)
+
+Screen 7 settings are set by the following section of `autounattend.xml`.
+
+```xml
+<settings pass="windowsPE">
+  <component name="Microsoft-Windows-Setup">
+    <UserData>
+      <AcceptEula>true</AcceptEula>
+    </UserData>
+  </component>
+</settings>
+```
 
 ## Screen 8 - Please wait
 
@@ -294,21 +402,31 @@ The partitioning above follows Microsoft recommendations at https://learn.micros
 
 Here four partitions are created for a 127 GB disk.
 
-Partition 1 is the system partition of type EFI. its size is 200 MB and format is FAT32.
+Partition 1 is the system partition of type EFI. Its size is 200 MB and format is FAT32.
 
 Partition 2 is the MSR. Its size is 16 MB.
 
-Partition 3 is the Windows partition of type Primary. Its 126.2 GB size is determined by subtracting the sizes of Partitions 1, 2 and 4. Its format is NTFS.
+Partition 3 is the Windows partition of type Primary. Its 126.2 GB size is determined by subtracting the sizes of Partitions 1, 2 and 4 from the disk size. Its format is NTFS.
 
-Partition 4 is the Recovery partition. It is sized at 642 MB to be a little bigger than the `winre.wim` Windows recovery tools image inside `install.wim`. The size of `winre.wim` is obtained by using `dism` from the ADK to mount the Windows 11 Pro image inside `install.wim` and examining its contents.
+Partition 4 is the Recovery partition. Its size of 642 MB is taken from the default partitioning done by an interactive run of the Windows installer. It's in keeping with Microsoft recommendations. It's bigger than the `winre.wim` Windows recovery tools image inside `install.wim` that it needs to accomodate but not overly wasteful. The size of `winre.wim` is obtained by using `dism` from the ADK to mount the Windows 11 Pro image inside `install.wim` and examining its contents.
 
 ```powershell
 mkdir tmpmnt
 dism -mount-wim -wimfile:install.wim -index:6 -mountdir:tmpmnt -readonly
-ls winmnt/windows/system32/recovery/winre.wim
--a----     9/5/2024  10:53 PM    532748021 winre.wim
-dism -unmount-wim -mountdir:winmnt -discard, not -dismount-wim
+ls tmpmnt/windows/system32/recovery/winre.wim
 ```
+
+```
+Mode             LastWriteTime      Length Name
+----             -------------      ------ ----
+-a----     9/5/2024  10:53 PM    532748021 winre.wim
+```
+
+```powershell
+dism -unmount-wim -mountdir:tmpmnt -discard
+```
+
+The Recovery partition `<TypeID>` is `de94bba4-06d1-4d40-a16a-bfd50179d6ac` as documented at https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-setup-diskconfiguration-disk-modifypartitions-modifypartition-typeid
 
 ## Screen 11 - Ready to install
 
@@ -625,6 +743,39 @@ Screen 45 is an informational message.
 ## Screen 46 - Hi
 
 Screen 46 is shown when the environment is set up for the new local user account.
+
+Screen 46 settings are set by the following section of `autounattend.xml`.
+
+```xml
+<settings pass="oobeSystem">
+  <component name="Microsoft-Windows-Shell-Setup">
+    <AutoLogon>
+      <Password>
+        <Value>ZABlAG0AbwAxAFAAYQBzAHMAdwBvAHIAZAA=</Value>
+        <PlainText>false</PlainText>
+      </Password>
+      <LogonCount>1</LogonCount>
+      <Username>demo1</Username>
+      <Enabled>true</Enabled>
+    </AutoLogon>
+  </component>
+</settings>
+```
+
+Additional custom commands may be run on first login. Here's an example of simple sanity checks. It records the time and username of the first login. It also prints the value of `AutoLogonCount` in the registry that is used to track the number of auto logins requested in `<AutoLogon>`.
+
+```xml
+<settings pass="oobeSystem">
+  <component name="Microsoft-Windows-Shell-Setup">
+    <FirstLogonCommands>
+      <SynchronousCommand wcm:action="add">
+        <CommandLine>powershell &quot;&amp;{ [datetime]::now.tostring(\&quot;yyyy-MM-dd_HH:mm:ss.fffK: \&quot;) + [string](whoami); reg query \&quot;hklm\software\microsoft\windows nt\currentversion\winlogon\&quot;; reg add \&quot;hklm\software\microsoft\windows nt\currentversion\winlogon\&quot; /v autologoncount /t reg_dword /d 0 /f} &gt; autologincmds.txt&quot;</CommandLine>
+        <Order>1</Order>
+      </SynchronousCommand>
+    </FirstLogonCommands>
+  </component>
+</settings>
+```
 
 ![46_hi_message.png](images/46_hi_message.png)
 
