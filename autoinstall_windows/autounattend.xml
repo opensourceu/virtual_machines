@@ -126,6 +126,12 @@
         <Username>demo1</Username>
         <Enabled>true</Enabled>
       </AutoLogon>
+      <FirstLogonCommands>
+        <SynchronousCommand wcm:action="add">
+          <CommandLine>reg add \&quot;hklm\software\microsoft\windows nt\currentversion\winlogon\&quot; /v autologoncount /t reg_dword /d 0 /f</CommandLine>
+          <Order>1</Order>
+        </SynchronousCommand>
+      </FirstLogonCommands>
     </component>
   </settings>
   <cpi:offlineImage cpi:source="wim:d:/work/git/zmajeedforks/opensourceu/virtual_machines/gitbranches/zmajeed_general/autoinstall_windows/install.wim#Windows 11 Pro" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
