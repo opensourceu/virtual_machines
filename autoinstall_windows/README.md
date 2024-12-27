@@ -742,7 +742,11 @@ Screen 45 is an informational message.
 
 ## Screen 46 - Hi
 
+Screen 46 is an informational message.
+
 Screen 46 is shown when the environment is set up for the new local user account.
+
+![46_hi_message.png](images/46_hi_message.png)
 
 Screen 46 settings are set by the following section of `autounattend.xml`.
 
@@ -796,8 +800,6 @@ powershell "&{
   reg add \"hklm\software\microsoft\windows nt\currentversion\winlogon\" /v autologoncount /t reg_dword /d 0 /f
 } > autologincmds.txt"
 ```
-
-![46_hi_message.png](images/46_hi_message.png)
 
 ## Screen 47 - Getting things ready for you
 
