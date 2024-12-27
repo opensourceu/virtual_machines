@@ -758,11 +758,19 @@ Screen 46 settings are set by the following section of `autounattend.xml`.
       <Username>demo1</Username>
       <Enabled>true</Enabled>
     </AutoLogon>
+    <FirstLogonCommands>
+      <SynchronousCommand wcm:action="add">
+        <CommandLine>reg add \&quot;hklm\software\microsoft\windows nt\currentversion\winlogon\&quot; /v autologoncount /t reg_dword /d 0 /f</CommandLine>
+        <Order>1</Order>
+      </SynchronousCommand>
+    </FirstLogonCommands>
   </component>
 </settings>
 ```
 
-Additional custom commands may be run on first login. Here's an example of simple sanity checks. It records the time and username of the first login. It also prints the value of `AutoLogonCount` in the registry that is used to track the number of auto logins requested in `<AutoLogon>`.
+The settings above set auto login to occur once. The `<FirstLogonCommands>` section is needed for `<LogonCount>` of 1 to work as described at https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-shell-setup-autologon-logoncount
+
+Any custom commands may be run on first login. Here's an example of simple sanity checks. It records the time and username of the first login. It also prints the value of `AutoLogonCount` in the registry that is used to track the number of auto logins specified in `<AutoLogon>`.
 
 ```xml
 <settings pass="oobeSystem">
@@ -775,6 +783,16 @@ Additional custom commands may be run on first login. Here's an example of simpl
     </FirstLogonCommands>
   </component>
 </settings>
+```
+
+The Powershell commands without XML escapes are
+
+```powershell
+powershell "&{
+  [datetime]::now.tostring(\"yyyy-MM-dd_HH:mm:ss.fffK: \") + [string](whoami)
+  reg query \"hklm\software\microsoft\windows nt\currentversion\winlogon\"
+  reg add \"hklm\software\microsoft\windows nt\currentversion\winlogon\" /v autologoncount /t reg_dword /d 0 /f
+} > autologincmds.txt"
 ```
 
 ![46_hi_message.png](images/46_hi_message.png)
