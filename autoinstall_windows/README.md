@@ -26,14 +26,14 @@ Some installer screens only display informational or progress messages and don't
 
 The file [autounattend.xml](autounattend.xml) is a nearly minimal answer file to automatically install Windows 11 Pro 24H2 version 10.0.26100
 
-## 2. What's needed to create a Windows autoinstaller
+## 3. What's needed to create a Windows autoinstaller
 
 1. An official Windows installer ISO
    - Download from https://www.microsoft.com/en-us/software-download/windows11
 2. Windows Assessment and Deployment Kit (ADK)
    - Download from https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install
 
-## 3. High-level steps to creating a Windows autoinstaller
+## 4. High-level steps to creating a Windows autoinstaller
 
 1. Mount the official Windows ISO. Copy its contents to a directory for making modifications
 2. Extract `install.wim` from the ISO directory
@@ -41,7 +41,7 @@ The file [autounattend.xml](autounattend.xml) is a nearly minimal answer file to
 4. Copy answer file to the ISO directory
 5. Create a new autoinstaller ISO file from the ISO directory
 
-## 4. Step 1 - Mount and copy Windows ISO
+## 5. Step 1 - Mount and copy Windows ISO
 
 Mount the ISO and note the drive
 
@@ -67,7 +67,7 @@ Unmount the ISO. It won't be needed again.
 dismount-diskimage Win11_24H2_English_x64.iso
 ```
 
-## 5. Step 2 - Extract `install.wim`
+## 6. Step 2 - Extract `install.wim`
 
 Copy Windows image `install.wim` to make it writable.
 
@@ -75,7 +75,7 @@ Copy Windows image `install.wim` to make it writable.
 cp win11mod/sources/install.wim .
 ```
 
-## 6. Step 3 - Create answer file in Windows System Image Manager
+## 7. Step 3 - Create answer file in Windows System Image Manager
 
 Launch Windows System Image Manager from ADK. Open `install.wim`
 
@@ -85,7 +85,7 @@ Create an answer file. Add settings from the Windows Image panel to the answer f
 
 ![wsim_answer_file.png](images/wsim_answer_file.png)
 
-## 7. Step 4 - Add answer file to ISO contents
+## 8. Step 4 - Add answer file to ISO contents
 
 Copy the answer file to the ISO directory `win11mod`
 
@@ -93,7 +93,7 @@ Copy the answer file to the ISO directory `win11mod`
 cp autounattend.xml win11mod
 ```
 
-## 8. Step 5 - Create ISO file from modified ISO contents
+## 9. Step 5 - Create ISO file from modified ISO contents
 
 Use `oscdimg` from the ADK to create an ISO file from the ISO directory contents. Its usage is documented at https://learn.microsoft.com/en-us/troubleshoot/windows-server/setup-upgrade-and-drivers/create-iso-image-for-uefi-platforms and https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/oscdimg-command-line-options
 
@@ -101,7 +101,7 @@ Use `oscdimg` from the ADK to create an ISO file from the ISO directory contents
 oscdimg -bootdata:2#p0,e,bwin11mod/boot/etfsboot.com#pEF,e,bwin11mod/efi/microsoft/boot/efisys.bin -u1 -udfver102 win11mod win11.auto.iso
 ```
 
-## 9. Troubleshooting and debugging
+## 10. Troubleshooting and debugging
 
 Generally, it helps to make tiny incremental changes to easily isolate and fix mistakes. It also helps to first test new commands and files in small standalone toy examples in order to understand their usage and impact.
 
@@ -115,7 +115,7 @@ More detailed information can be obtained by launching a `cmd` terminal with `Sh
 
 The preinstall environment available at the beginning of the installer is described at https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/winpe-intro
 
-## 10. Windows installer screens
+## 11. Windows installer screens
 
 These screens are from the Windows 11 installer ISO at https://www.microsoft.com/en-us/software-download/windows11. The installer was run interactively to install Windows 11 Pro 24H2 version 10.0.26100.
 
