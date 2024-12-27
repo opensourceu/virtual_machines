@@ -22,7 +22,74 @@ Windows installation is fully automated by setting values in `autounattend.xml` 
 
 Some installer screens only display informational or progress messages and don't require user input. These screens still appear in an unattended install.
 
-## 1. Windows installer screens
+## 2. What's needed to create a Windows autoinstaller
+
+1. An official Windows installer ISO
+   - Download from https://www.microsoft.com/en-us/software-download/windows11
+2. Windows Assessment and Deployment Kit (ADK)
+   - Download from https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install
+
+## 4. High-level steps to creating a Windows autoinstaller
+
+1. Mount the official Windows ISO. Copy its contents to a directory for making modifications
+2. Extract `install.wim` from the ISO directory
+3. Create an answer file for `install.wim` in Windows System Image Manager from the ADK
+4. Copy answer file to the ISO directory
+5. Create a new autoinstaller ISO file from the ISO directory
+
+## 3. Step 1 - Mount and copy Windows ISO
+
+Mount the ISO and note the drive
+
+```powershell
+mount-diskimage Win11_24H2_English_x64.iso
+```
+Copy ISO contents to a directory for modification. The command below assumes the ISO is mounted on `k:` drive and its contents are copied to a `win11mod` directory.
+
+```powershell
+robocopy k: win11mod -copy:dt -dcopy:t -e -r:0
+```
+Unmount the ISO. It won't be needed again.
+
+```powershell
+dismount-diskimage Win11_24H2_English_x64.iso
+```
+
+## 4. Step 2 - Extract `install.wim`
+
+Copy Windows image `install.wim` to make it writable.
+
+```powershell
+cp win11mod/sources/install.wim .
+```
+
+## 5. Step 3 - Create answer file in Windows System Image Manager
+
+Launch Windows System Image Manager from ADK. Open `install.wim`
+
+![wsim_open_image.png](images/wsim_open_image.png)
+
+Create an answer file. Add settings from the Windows Image panel to the answer file
+
+![wsim_answer_file.png](images/wsim_answer_file.png)
+
+## 6. Step 4 - Add answer file to ISO contents
+
+Copy the answer file to the ISO directory `win11mod`
+
+```powershell
+cp autounattend.xml win11mod
+```
+
+## 7. Step 5 - Create ISO file from modified ISO contents
+
+Use `oscdimg` from the ADK to create an ISO file from the ISO directory contents
+
+```powershell
+oscdimg -bootdata:2#p0,e,bwin11mod/boot/etfsboot.com#pEF,e,bwin11mod/efi/microsoft/boot/efisys.bin -u1 -udfver102 win11mod win11.auto.iso
+```
+
+## 8. Windows installer screens
 
 These screens are from the Windows 11 installer ISO at https://www.microsoft.com/en-us/software-download/windows11. The installer was run interactively to install Windows 11 Pro 24H2 version 10.0.26100.
 
@@ -558,5 +625,4 @@ Screen 48 is an informational message.
 Screen 49 is the Windows login screen that shows the system is ready for use after the end of the installation.
 
 ![49_login.png](images/49_login.png)
-
 
