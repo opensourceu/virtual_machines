@@ -29,7 +29,7 @@ Some installer screens only display informational or progress messages and don't
 2. Windows Assessment and Deployment Kit (ADK)
    - Download from https://learn.microsoft.com/en-us/windows-hardware/get-started/adk-install
 
-## 4. High-level steps to creating a Windows autoinstaller
+## 3. High-level steps to creating a Windows autoinstaller
 
 1. Mount the official Windows ISO. Copy its contents to a directory for making modifications
 2. Extract `install.wim` from the ISO directory
@@ -37,7 +37,7 @@ Some installer screens only display informational or progress messages and don't
 4. Copy answer file to the ISO directory
 5. Create a new autoinstaller ISO file from the ISO directory
 
-## 3. Step 1 - Mount and copy Windows ISO
+## 4. Step 1 - Mount and copy Windows ISO
 
 Mount the ISO and note the drive
 
@@ -55,7 +55,7 @@ Unmount the ISO. It won't be needed again.
 dismount-diskimage Win11_24H2_English_x64.iso
 ```
 
-## 4. Step 2 - Extract `install.wim`
+## 5. Step 2 - Extract `install.wim`
 
 Copy Windows image `install.wim` to make it writable.
 
@@ -63,7 +63,7 @@ Copy Windows image `install.wim` to make it writable.
 cp win11mod/sources/install.wim .
 ```
 
-## 5. Step 3 - Create answer file in Windows System Image Manager
+## 6. Step 3 - Create answer file in Windows System Image Manager
 
 Launch Windows System Image Manager from ADK. Open `install.wim`
 
@@ -73,7 +73,7 @@ Create an answer file. Add settings from the Windows Image panel to the answer f
 
 ![wsim_answer_file.png](images/wsim_answer_file.png)
 
-## 6. Step 4 - Add answer file to ISO contents
+## 7. Step 4 - Add answer file to ISO contents
 
 Copy the answer file to the ISO directory `win11mod`
 
@@ -81,7 +81,7 @@ Copy the answer file to the ISO directory `win11mod`
 cp autounattend.xml win11mod
 ```
 
-## 7. Step 5 - Create ISO file from modified ISO contents
+## 8. Step 5 - Create ISO file from modified ISO contents
 
 Use `oscdimg` from the ADK to create an ISO file from the ISO directory contents
 
@@ -89,7 +89,7 @@ Use `oscdimg` from the ADK to create an ISO file from the ISO directory contents
 oscdimg -bootdata:2#p0,e,bwin11mod/boot/etfsboot.com#pEF,e,bwin11mod/efi/microsoft/boot/efisys.bin -u1 -udfver102 win11mod win11.auto.iso
 ```
 
-## 8. Windows installer screens
+## 9. Windows installer screens
 
 These screens are from the Windows 11 installer ISO at https://www.microsoft.com/en-us/software-download/windows11. The installer was run interactively to install Windows 11 Pro 24H2 version 10.0.26100.
 
@@ -288,6 +288,26 @@ Screen 10 settings are set by the following section of `autounattend.xml`.
     </DiskConfiguration>
   </component>
 </settings>
+```
+
+The partitioning above follows Microsoft recommendations at https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-uefigpt-based-hard-drive-partitions.
+
+Here four partitions are created for a 127 GB disk.
+
+Partition 1 is the system partition of type EFI. its size is 200 MB and format is FAT32.
+
+Partition 2 is the MSR. Its size is 16 MB.
+
+Partition 3 is the Windows partition of type Primary. Its 126.2 GB size is determined by subtracting the sizes of Partitions 1, 2 and 4. Its format is NTFS.
+
+Partition 4 is the Recovery partition. It is sized at 642 MB to be a little bigger than the `winre.wim` Windows recovery tools image inside `install.wim`. The size of `winre.wim` is obtained by using `dism` from the ADK to mount the Windows 11 Pro image inside `install.wim` and examining its contents.
+
+```powershell
+mkdir tmpmnt
+dism -mount-wim -wimfile:install.wim -index:6 -mountdir:tmpmnt -readonly
+ls winmnt/windows/system32/recovery/winre.wim
+-a----     9/5/2024  10:53 PM    532748021 winre.wim
+dism -unmount-wim -mountdir:winmnt -discard, not -dismount-wim
 ```
 
 ## Screen 11 - Ready to install
