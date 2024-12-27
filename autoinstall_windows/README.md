@@ -772,6 +772,8 @@ The settings above set auto login to occur once. The `<FirstLogonCommands>` sect
 
 Any custom commands may be run on first login. Here's an example of simple sanity checks. It records the time and username of the first login. It also prints the value of `AutoLogonCount` in the registry that is used to track the number of auto logins specified in `<AutoLogon>`.
 
+It should be noted `<SynchronousCommand>` is a misnomer. Each `<SynchronousCommand>` in `<FirstLogonCommands>` runs asynchronously as documented at https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-shell-setup-firstlogoncommands-synchronouscommand. This means every `<SynchronousCommand>` should be independent of any other `<SynchronousCommand>` or implement synchronization among commands.
+
 ```xml
 <settings pass="oobeSystem">
   <component name="Microsoft-Windows-Shell-Setup">
