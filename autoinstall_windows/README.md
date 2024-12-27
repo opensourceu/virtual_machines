@@ -24,7 +24,7 @@ Some installer screens only display informational or progress messages and don't
 
 ## 2. A complete minimal answer file for an unattended install
 
-The file [autounattend.xml](autounattend.xml) is a nearly minimal answer file to automatically install Windows 11 Pro 24H2 version 10.0.26100
+The file [autounattend.xml](autounattend.xml) is a minimal answer file to automatically install Windows 11 Pro 24H2 version 10.0.26100
 
 ## 3. What's needed to create a Windows autoinstaller
 
