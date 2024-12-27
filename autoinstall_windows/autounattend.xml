@@ -100,24 +100,6 @@
       <InputLocale>en-US</InputLocale>
     </component>
     <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <AutoLogon>
-        <Password>
-          <Value>ZABlAG0AbwAxAFAAYQBzAHMAdwBvAHIAZAA=</Value>
-          <PlainText>false</PlainText>
-        </Password>
-        <LogonCount>1</LogonCount>
-        <Username>demo1</Username>
-        <Enabled>true</Enabled>
-      </AutoLogon>
-      <FirstLogonCommands>
-        <SynchronousCommand wcm:action="add">
-          <CommandLine>powershell &quot;&amp;{ [datetime]::now.tostring(\&quot;yyyy-MM-dd_HH:mm:ss.fffK: \&quot;) + [string](whoami); reg query \&quot;hklm\software\microsoft\windows nt\currentversion\winlogon\&quot;; reg add \&quot;hklm\software\microsoft\windows nt\currentversion\winlogon\&quot; /v autologoncount /t reg_dword /d 0 /f} &gt; autologincmds.txt&quot;</CommandLine>
-          <Order>1</Order>
-        </SynchronousCommand>
-      </FirstLogonCommands>
-      <OOBE>
-        <ProtectYourPC>1</ProtectYourPC>
-      </OOBE>
       <UserAccounts>
         <LocalAccounts>
           <LocalAccount wcm:action="add">
@@ -132,6 +114,18 @@
         </LocalAccounts>
       </UserAccounts>
       <TimeZone>Central Standard Time</TimeZone>
+      <OOBE>
+        <ProtectYourPC>1</ProtectYourPC>
+      </OOBE>
+      <AutoLogon>
+        <Password>
+          <Value>ZABlAG0AbwAxAFAAYQBzAHMAdwBvAHIAZAA=</Value>
+          <PlainText>false</PlainText>
+        </Password>
+        <LogonCount>1</LogonCount>
+        <Username>demo1</Username>
+        <Enabled>true</Enabled>
+      </AutoLogon>
     </component>
   </settings>
   <cpi:offlineImage cpi:source="wim:d:/work/git/zmajeedforks/opensourceu/virtual_machines/gitbranches/zmajeed_general/autoinstall_windows/install.wim#Windows 11 Pro" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
