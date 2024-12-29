@@ -56,7 +56,6 @@
               <Letter>C</Letter>
               <Format>NTFS</Format>
               <Label>Windows</Label>
-              <TypeID>ebd0a0a2-b9e5-4433-87c0-68b6b72699c7</TypeID>
             </ModifyPartition>
             <ModifyPartition wcm:action="add">
               <Order>3</Order>
@@ -134,5 +133,4 @@
       </FirstLogonCommands>
     </component>
   </settings>
-  <cpi:offlineImage cpi:source="wim:d:/work/git/zmajeedforks/opensourceu/virtual_machines/gitbranches/zmajeed_general/autoinstall_windows/install.wim#Windows 11 Pro" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
 </unattend>
